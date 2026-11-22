@@ -37,6 +37,7 @@ function parseCareer(value: unknown): CareerState {
   career.bonusOnce = raw.bonusOnce === true
   career.bankTwice = raw.bankTwice === true
   career.cleanFinish = raw.cleanFinish === true
+  career.wellSavesThrice = raw.wellSavesThrice === true
   return career
 }
 
@@ -54,6 +55,7 @@ function parseEntry(value: unknown): HistoryEntry | null {
     bonusEntries: typeof raw.bonusEntries === 'number' ? raw.bonusEntries : 0,
     bankClears: typeof raw.bankClears === 'number' ? raw.bankClears : 0,
     cleanFinish: raw.cleanFinish === true,
+    wellSaves: typeof raw.wellSaves === 'number' ? raw.wellSaves : 0,
   }
 }
 
@@ -114,6 +116,7 @@ export function commitSession(doc: PinballDocument, abandoned: boolean): void {
     bonusEntries: doc.live.bonusEntries,
     bankClears: doc.live.bankClears,
     cleanFinish: clean,
+    wellSaves: doc.live.wellSaves,
   })
   if (doc.history.length > 20) doc.history.length = 20
   doc.run.committed = true

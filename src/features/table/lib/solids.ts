@@ -20,7 +20,7 @@ function flipperSolid(doc: PinballDocument, side: 'left' | 'right'): Solid {
   const pivot = side === 'left' ? points.leftPivot : points.rightPivot
   const flipper = side === 'left' ? doc.flippers.left : doc.flippers.right
   const tip = polar(pivot, points.length, flipper.angle)
-  const solid = segment(side === 'left' ? BodyId.flipL : BodyId.flipR, pivot.x, pivot.y, tip.x, tip.y, 0.22, 0, false)
+  const solid = segment(side === 'left' ? BodyId.flipL : BodyId.flipR, pivot.x, pivot.y, tip.x, tip.y, 0.22, 0, true)
   solid.pivotX = pivot.x
   solid.pivotY = pivot.y
   solid.omega = flipper.omega

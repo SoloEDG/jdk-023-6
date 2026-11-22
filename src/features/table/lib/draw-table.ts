@@ -1,5 +1,6 @@
 import type { PinballDocument } from '@/shared/document'
 import { polar } from '@/shared/geometry'
+import { effectivePolarity, WELL_LAYOUT } from '@/shared/magnets'
 import {
   VIEW,
   anchors,
@@ -146,6 +147,49 @@ function holeOf(ctx: CanvasRenderingContext2D, doc: PinballDocument): void {
   ctx.stroke()
 }
 
+function wellsOf(ctx: CanvasRenderingContext2D, doc: PinballDocument): void {
+  for (let index = 0; index < WELL_LAYOUT.length; index += 1) {
+    const mark = WELL_LAYOUT[index]
+    const well = doc.magnets.wells[index]
+    if (!mark || !well) continue
+    const powered = well.chargeMs > 0
+    const repel = powered && effectivePolarity(well) === 'repel'
+    // 作用范围：未供电时只画淡淡的底圈，供电后发光
+    ctx.beginPath()
+    ctx.fillStyle = powered ? 'rgba(120,200,255,0.14)' : 'rgba(243,226,196,0.06)'
+    ctx.arc(mark.x, mark.y, well.field, 0, Math.PI * 2)
+    ctx.fill()
+    if (powered) {
+      ctx.beginPath()
+      ctx.strokeStyle = repel ? 'rgba(255,109,127,0.5)' : 'rgba(120,200,255,0.55)'
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([5, 5])
+      ctx.arc(mark.x, mark.y, well.field, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+    // 井心软核
+    ctx.beginPath()
+    ctx.fillStyle = powered ? (repel ? '#7a2336' : '#14435f') : 'rgba(10,20,18,0.55)'
+    ctx.arc(mark.x, mark.y, well.core, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.strokeStyle = powered ? (repel ? '#ff6d7f' : '#7fd0ff') : 'rgba(215,164,65,0.5)'
+    ctx.lineWidth = 2
+    ctx.arc(mark.x, mark.y, well.core, 0, Math.PI * 2)
+    ctx.stroke()
+    // 井心十字标
+    ctx.beginPath()
+    ctx.strokeStyle = powered ? 'rgba(255,255,255,0.75)' : 'rgba(243,226,196,0.35)'
+    ctx.lineWidth = 1.5
+    ctx.moveTo(mark.x - 4, mark.y)
+    ctx.lineTo(mark.x + 4, mark.y)
+    ctx.moveTo(mark.x, mark.y - 4)
+    ctx.lineTo(mark.x, mark.y + 4)
+    ctx.stroke()
+  }
+}
+
 function scoopOf(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = 'rgba(243,226,196,0.18)'
   ctx.fillRect(356, 90, 32, 590)
@@ -236,6 +280,7 @@ export function paintTable(ctx: CanvasRenderingContext2D, doc: PinballDocument, 
   slingsOf(ctx)
   gateOf(ctx, doc)
   holeOf(ctx, doc)
+  wellsOf(ctx, doc)
   spinnerOf(ctx, doc)
   bumpersOf(ctx, doc)
   plungerOf(ctx, doc)

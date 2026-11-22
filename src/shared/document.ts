@@ -1,4 +1,5 @@
 import { BALL_RADIUS } from '@/shared/ids'
+import { createMagnetState, type MagnetState } from '@/shared/magnets'
 
 export type Phase = 'ready' | 'playing' | 'paused' | 'gameover'
 
@@ -26,6 +27,10 @@ export interface BallState {
   rideMs: number
   rideDur: number
   idleMs: number
+  /** 当前停留的磁力井 id，不在任何井内时为 null */
+  wellId: string | null
+  /** 刚从一口已接住的井里脱出、等待挡板击打的井 id */
+  wellEscapeId: string | null
 }
 
 export interface FlipperState {
@@ -73,6 +78,8 @@ export interface LiveGoals {
   tilted: boolean
   bankPending: boolean
   bankResetMs: number
+  /** 从磁力井里打出的次数（本局） */
+  wellSaves: number
 }
 
 export interface CareerState {
@@ -80,6 +87,7 @@ export interface CareerState {
   bonusOnce: boolean
   bankTwice: boolean
   cleanFinish: boolean
+  wellSavesThrice: boolean
 }
 
 export interface HistoryEntry {
@@ -92,6 +100,7 @@ export interface HistoryEntry {
   bonusEntries: number
   bankClears: number
   cleanFinish: boolean
+  wellSaves: number
 }
 
 export interface FeedItem {
@@ -128,6 +137,7 @@ export interface PinballDocument {
   chain: ChainState
   live: LiveGoals
   career: CareerState
+  magnets: MagnetState
   history: HistoryEntry[]
   feed: FeedItem[]
   feedSeq: number
@@ -137,7 +147,7 @@ export interface PinballDocument {
 }
 
 export function defaultCareer(): CareerState {
-  return { score10k: false, bonusOnce: false, bankTwice: false, cleanFinish: false }
+  return { score10k: false, bonusOnce: false, bankTwice: false, cleanFinish: false, wellSavesThrice: false }
 }
 
 export function createDocument(): PinballDocument {
@@ -158,6 +168,8 @@ export function createDocument(): PinballDocument {
       rideMs: 0,
       rideDur: 1,
       idleMs: 0,
+      wellId: null,
+      wellEscapeId: null,
     },
     flippers: {
       left: { angle: 0.62, omega: 0, held: false },
@@ -168,8 +180,16 @@ export function createDocument(): PinballDocument {
     mechanisms: [],
     gates: { rampOpen: false },
     chain: { count: 0, lastZone: null, remainMs: 0, bonusMs: 0, multiplier: 1 },
-    live: { bonusEntries: 0, bankClears: 0, tilted: false, bankPending: false, bankResetMs: 0 },
+    live: {
+      bonusEntries: 0,
+      bankClears: 0,
+      tilted: false,
+      bankPending: false,
+      bankResetMs: 0,
+      wellSaves: 0,
+    },
     career: defaultCareer(),
+    magnets: createMagnetState(),
     history: [],
     feed: [],
     feedSeq: 0,

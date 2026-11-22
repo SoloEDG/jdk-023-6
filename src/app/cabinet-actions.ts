@@ -27,6 +27,13 @@ export function applyDrain(doc: PinballDocument): void {
   doc.ball.holdMs = 0
   doc.ball.vx = 0
   doc.ball.vy = 0
+  doc.ball.wellId = null
+  doc.ball.wellEscapeId = null
+  for (const well of doc.magnets.wells) {
+    well.dwellMs = 0
+    well.ejectMs = 0
+    well.armed = false
+  }
   if (doc.ballsLeft <= 0) {
     doc.phase = 'gameover'
     doc.ball.held = 'none'

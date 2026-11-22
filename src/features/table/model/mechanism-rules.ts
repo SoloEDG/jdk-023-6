@@ -11,6 +11,7 @@ import {
 } from '@/shared/document'
 import { BodyId } from '@/shared/ids'
 import { anchors, stickPlunger } from '@/features/table/lib/playfield-layout'
+import { powerWellFromDrop } from '@/features/magnets'
 
 const COOLDOWN_MS: Record<MechanismKind, number> = {
   bumper: 160,
@@ -127,6 +128,7 @@ export function consumeContacts(doc: PinballDocument, events: ContactEvent[]): v
     if (mechanism.kind === 'drop' && mechanism.up) {
       mechanism.up = false
       mechanism.lamp = 1
+      powerWellFromDrop(doc, event.id)
       const drops = doc.mechanisms.filter((item) => item.kind === 'drop')
       if (drops.every((item) => !item.up) && !doc.live.bankPending) {
         doc.live.bankPending = true

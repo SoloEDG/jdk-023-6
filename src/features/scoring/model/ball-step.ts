@@ -4,6 +4,8 @@ import { speedOf } from '@/shared/geometry'
 import { BodyId } from '@/shared/ids'
 import type { Solid } from '@/shared/solids'
 import { resolveBall } from '@/features/scoring/lib/collide'
+import { applyMagnetForces, countFlipperSaves, trackWellOccupancy } from '@/features/magnets'
+import type { WellContact } from '@/features/magnets/lib/magnet-force'
 
 const MAX_SPEED = 1750
 const SCOOP_MS = 560
@@ -121,7 +123,11 @@ export function advanceBall(doc: PinballDocument, solids: Solid[], dtMs: number,
   const steps = Math.min(6, Math.max(1, Math.ceil((speedOf(doc.ball.vx, doc.ball.vy) * dt) / 5)))
   const slice = dt / steps
   const raw: ContactEvent[] = []
+  let wellContact: WellContact | null = null
   for (let index = 0; index < steps; index += 1) {
+    // 磁力先于重力逐子帧累加到球速，只改速度、不改位置，不会瞬传或与井心重叠
+    const magnet = applyMagnetForces(doc, doc.ball, slice)
+    if (magnet && (!wellContact || magnet.inside)) wellContact = magnet
     doc.ball.vy += 1480 * slice
     doc.ball.vx *= Math.exp(-0.18 * slice)
     doc.ball.vy *= Math.exp(-0.02 * slice)
@@ -131,7 +137,11 @@ export function advanceBall(doc: PinballDocument, solids: Solid[], dtMs: number,
     capture(doc, dedupeContacts(raw))
     if (doc.ball.held !== 'none') break
   }
+  trackWellOccupancy(doc, wellContact)
   capSpeed(doc, dtMs)
   markDrainOrSeat(doc)
-  return dedupeContacts(raw).filter((event) => event.id !== BodyId.scoop)
+  const contacts = dedupeContacts(raw).filter((event) => event.id !== BodyId.scoop)
+  // 挡板撞击不产生得分，会被 applyScore 过滤掉，所以在拿到原始碰撞事件的这里统计“井里打出”
+  countFlipperSaves(doc, contacts)
+  return contacts
 }

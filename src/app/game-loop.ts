@@ -2,6 +2,7 @@ import { commandFromInput, type FrameInput } from '@/shared/commands'
 import type { PinballDocument } from '@/shared/document'
 import { absorbZones, tickBonus } from '@/features/bonus'
 import { advanceControls } from '@/features/flippers'
+import { tickMagnets } from '@/features/magnets'
 import { persist, syncRecords } from '@/features/records'
 import { simulateBall } from '@/features/scoring'
 import { anchors, consumeContacts, publishGates, sampleRamp, sampleScoop, stickPlunger, syncTable } from '@/features/table'
@@ -26,6 +27,7 @@ export function runFrame(doc: PinballDocument, input: FrameInput, dtMs: number):
 
   doc.run.playMs += dtMs
   tickBonus(doc, dtMs)
+  tickMagnets(doc, dtMs)
   const solids = syncTable(doc, dtMs)
   if (doc.ball.held !== 'plunger') {
     const events = simulateBall(doc, solids, dtMs, { ramp: sampleRamp, scoop: sampleScoop })

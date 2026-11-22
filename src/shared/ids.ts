@@ -22,6 +22,8 @@ export const BodyId = {
   flipL: 'flipper-l',
   flipR: 'flipper-r',
   wall: 'wall',
+  wellL: 'magnet-well-l',
+  wellR: 'magnet-well-r',
 } as const
 
 export type BodyIdName = (typeof BodyId)[keyof typeof BodyId]

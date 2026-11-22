@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { MechanismState, PinballDocument } from '@/shared/document'
+import { effectivePolarity } from '@/shared/magnets'
 
 const props = defineProps<{ doc: PinballDocument }>()
 
@@ -20,6 +21,14 @@ function status(item: MechanismState): string {
 }
 
 const rows = computed(() => props.doc.mechanisms.filter((item) => item.kind !== 'scoop'))
+const wells = computed(() => props.doc.magnets.wells)
+
+function wellStatus(well: (typeof props.doc.magnets.wells)[number]): string {
+  if (well.chargeMs <= 0) return '未供电'
+  const polarity = effectivePolarity(well) === 'attract' ? '吸' : '推'
+  const dwell = well.dwellMs > 0 ? ` · 停住 ${(well.dwellMs / 1000).toFixed(1)} 秒` : ''
+  return `${polarity} · ${(well.chargeMs / 1000).toFixed(1)} 秒${dwell}`
+}
 </script>
 
 <template>
@@ -32,6 +41,10 @@ const rows = computed(() => props.doc.mechanisms.filter((item) => item.kind !== 
       <li v-for="item in rows" :key="item.id">
         <span>{{ item.label }}</span>
         <strong>{{ status(item) }}</strong>
+      </li>
+      <li v-for="well in wells" :key="well.id">
+        <span>{{ well.label }}</span>
+        <strong>{{ wellStatus(well) }}</strong>
       </li>
     </ul>
   </section>

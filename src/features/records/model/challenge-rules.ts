@@ -22,6 +22,10 @@ export function latchCareer(doc: PinballDocument): boolean {
     doc.career.bankTwice = true
     changed = true
   }
+  if (doc.live.wellSaves >= 3 && !doc.career.wellSavesThrice) {
+    doc.career.wellSavesThrice = true
+    changed = true
+  }
   return changed
 }
 
@@ -49,6 +53,13 @@ export function goalViews(doc: PinballDocument): GoalView[] {
       detail: `本局 ${doc.live.bankClears} 次`,
       liveDone: doc.live.bankClears >= 2,
       careerDone: doc.career.bankTwice,
+    },
+    {
+      id: 'wellSave',
+      label: '磁力井打出三次',
+      detail: `本局 ${doc.live.wellSaves} 次`,
+      liveDone: doc.live.wellSaves >= 3,
+      careerDone: doc.career.wellSavesThrice,
     },
     {
       id: 'clean',

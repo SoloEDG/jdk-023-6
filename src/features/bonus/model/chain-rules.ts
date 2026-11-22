@@ -1,6 +1,7 @@
 import type { ContactEvent } from '@/shared/contacts'
 import { flashNote, type PinballDocument } from '@/shared/document'
 import { BodyId } from '@/shared/ids'
+import { swapWellPolarity } from '@/features/magnets'
 
 export const CHAIN_NEED = 4
 export const CHAIN_WINDOW_MS = 2500
@@ -24,6 +25,8 @@ function arm(doc: PinballDocument, zone: string): void {
   doc.chain.bonusMs = BONUS_MS
   doc.chain.multiplier = BONUS_MULTIPLIER
   doc.live.bonusEntries += 1
+  // 奖励开始：两处磁力对调方向
+  swapWellPolarity(doc)
   flashNote(doc, '进入奖励，得分双倍')
 }
 
